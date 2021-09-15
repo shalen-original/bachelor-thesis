@@ -1,0 +1,13 @@
+{
+    "server": {
+        "port": 8080
+    },
+    "dapp_address": "0x2775d5ea1ea39787afa6486c6c1777af6bbecf49",
+    "client_address": "0xb0dbd98ead15018925c6395a76c5f2f1433d7a4a",
+    "eth_node_url": "ws://localhost:8545",
+    "eth_node_declared_origin": "",
+    "result": {
+        "folder": "/tmp/thesis",
+        "rejection_fee": 100
+    }
+}

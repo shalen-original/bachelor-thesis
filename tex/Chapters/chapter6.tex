@@ -1,0 +1,155 @@
+%!TEX root = ../thesis.tex
+
+\section{Evaluation and discussion}
+\label{sect:evaluation-and-discussion}
+
+\newcommand{\dappaddress}[0]{\code{0xd82429497c69208a358ece305efc7aba4b237fe2}}
+\newcommand{\gaspricegwei}[0]{$17.011103191$ GWei }
+\newcommand{\ethtoeur}[0]{$1 \text{ETH} = 537.257818083 \text{EUR}$}
+
+\newcommand{\txmigrationsdepoly}[0]{\code{0x9449167b4dd3e9e3d3a4c4920de87c94db0e4c03b6be8e8d42991a6aa6ff9121}}
+\newcommand{\txupdatemiga}[0]{\code{0x66ffefb48f188c02334eeaeb15bcd65a9237118d6fcfdc95ff6e791806426eee}}
+\newcommand{\txmaindeploy}[0]{\code{0x64a94e73a84e716ab4b27947ff2b1c3c44ae86e22e48ca3e7314f8864c2093b1}}
+\newcommand{\txupdatemigb}[0]{\code{0xde1f4e7590972b5bc4caa1a2c84019d0959be22d756a145f671f1882357c4a19}}
+
+\subsection{Cost evaluation}
+One of the important aspects that have to be evaluated when running computations on the Ethereum blockchain is cost. Every transaction, that is, every call to one of the smart contract's methods that alters the state of the contract, has a cost associated with it. This cost is determined by two parameters: the \code{gas} used by the execution of that method and the \code{gasPrice} associated with that transation. The first parameter depends on the requested computation: every assembly instruction executed by the Ethereum Virtual Machine has a certain gas cost associated with it. The second parameter describes the cost in Ether of one gas unit and depends on the blockchain situation when the transaction is performed: if a big number of transactions are pending, those with higher \code{gasPrice} have higher probability of being executed by a miner and be therefore added to the chain.
+There is a third parameter influencing the actual real-world cost of executing a transaction: the exchange rate between Ether and the non-crypto currency of reference (which, in our case, is Euro). The volatility of this exchange rate is often very high, therefore significantly altering the costs of using a service from day to day. 
+
+We executed some tests on our implementation of the smart contract, running both the standard scenario and the alternative ones. These tests have been run on the Rinkeby test blockchain and can be reproduced by calling the \code{/api/estimate} REST endpoint of the client application's backend. This endpoint performs a list of transactions on the smart contract and returns the amount of gas consumed by each single transaction and by the various scenarios: this amount of used gas can then be multipled by a choosen \code{gasPrice} to obtain the costs in Ether. Applying the Ethereum to Euro conversion factor to these prices allows to compute a cost in non-crypto currencies. All the tests have been run against the smart contract deployed at addess \dappaddress.
+
+In table \ref{table:method-costs} we report the cost in gas for running each of the method of the smart contract. We also computed the relative cost in Ether assuming a \code{gasPrice} of \gaspricegwei, which is the average amount currently used on the main Ethereum network. Finally, we also converted the Ether price in Euro assuming an exchange rate of \ethtoeur, which is the current exchange rate at the time of writing.
+
+\begin{table}[p]
+    \caption[Cost of executing smart contract methods]{Costs of executing the various smart contract methods. This table assumes a \code{gasPrice} of \gaspricegwei and an exchange rate between Ether and Euro of \ethtoeur.}
+    \centering
+    \label{table:method-costs}
+    \begin{tabular}{c c c c}
+        \toprule
+        Method & Gas consumed [Units] & Ether cost [GWei] & Euro cost [€]\\ 
+        \midrule
+        requestComputation & 138757 & 2360409.65 & 1.27 \\ acceptComputation & 69544 & 1183020.16 & 0.64 \\ computationDone & 113299 & 1927340.98 & 1.04 \\ acceptResult & 29141 & 495720.56 & 0.27 \\ withdrawReward & 43498 & 739948.97 & 0.40 \\ rejectResult & 49312 & 838851.52 & 0.45 \\ submitAuditorResult & 38551 & 655795.04 & 0.35 \\ challengeFarmerDisappeared & 34816 & 592258.57 & 0.32 \\ challengeResultIgnored & 29503 & 501878.58 & 0.27 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+As can be seen, even tough the computation executed by the smart contract are very straight-forward and concise, the costs are still not negligible. This becomes more evident in tables \ref{table:standard-scenario-costs} and \ref{table:result-rejected-costs}, which show the costs of executing the full standard scenario and the cost of the auditor intervention. These tables show the total amount of gas, Ether and Euro spend by each party and are computed by summing the costs of the individual method call reported in table \ref{table:method-costs}.
+
+The costs reported in these tables have to be considered as indicative. As shown in figure \ref{fig:graphs}, both the \code{gasPrice} and the Ether to Euro conversion rate vary significantly from day to day, causing the actual price of using this smart contract to fluctuate abountantly and making it impossible to compute accurate predictions.
+
+\begin{table}[p]
+    \caption[Cost of running the standard scenario]{Costs of executing standard scenario. This table assumes a \code{gasPrice} of \gaspricegwei and an exchange rate between Ether and Euro of \ethtoeur.}
+    \centering
+    \label{table:standard-scenario-costs}
+    \begin{tabular}{c c c c}
+        \toprule
+        Party & Gas consumed [Units] & Ether cost [GWei] & Euro cost [€]\\ 
+        \midrule
+        Publisher & 167898 & 2856130.20 & 1.53 \\ Farmer & 226341 & 3850310.11 & 2.07 \\ Total & 394239 & 6706440.31 & 3.60 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{table}[p]
+    \caption[Cost of running the result-rejected scenario]{Costs of executing the result-rejected scenario. This table assumes a \code{gasPrice} of \gaspricegwei and an exchange rate between Ether and Euro of \ethtoeur.}
+    \centering
+    \label{table:result-rejected-costs}
+    \begin{tabular}{c c c c}
+        \toprule
+        Party & Gas consumed [Units] & Ether cost [GWei] & Euro cost [€]\\ 
+        \midrule
+        Publisher & 188069 & 3199261.17 & 1.72 \\ Farmer & 182843 & 3110361.14 & 1.67 \\ Auditor & 38551 & 655795.04 & 0.35 \\ Total & 409463 & 6965417.35 & 3.74 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{figure}[p]
+    \caption[Ethereum to euro and gas price over time]{The following plots display how the \code{gasPrice} on the Ethereum main network and the Ethereum to Euro conversion rate change from day to day, causing significant differences in the price of actually using this smart contract}
+    \label{fig:graphs}
+\begin{center}
+    \begin{tikzpicture}
+        \begin{axis} [
+            title={Ethereum main network's \code{gasPrice}},
+            xlabel={Time}, ylabel={\code{gasPrice} [GWei]},
+            ytick={10, 15, 20, 25, 30, 35, 40}, 
+            ymajorgrids=true, grid style=dashed,
+            date coordinates in=x, date ZERO=2018-02-01,
+            xticklabel=\month-\day, width=\textwidth, height=6.5cm
+        ]
+
+        \addplot[mark=*, mark size=1pt] coordinates {
+            (2018-02-01, 40.44) (2018-02-02, 35.39) (2018-02-03, 29.30) (2018-02-04, 29.03) (2018-02-05, 26.87) (2018-02-06, 27.96) (2018-02-07, 26.69) (2018-02-08, 24.97) (2018-02-09, 22.86) (2018-02-10, 23.84) (2018-02-11, 21.90) (2018-02-12, 20.82) (2018-02-13, 21.68) (2018-02-14, 22.50) (2018-02-15, 21.57) (2018-02-16, 21.59) (2018-02-17, 21.84) (2018-02-18, 23.12) (2018-02-19, 19.91) (2018-02-20, 20.25) (2018-02-21, 19.36) (2018-02-22, 17.90) (2018-02-23, 18.83) (2018-02-24, 19.38) (2018-02-25, 16.76) (2018-02-26, 17.77) (2018-02-27, 17.89) (2018-02-28, 20.19) (2018-03-01, 18.47) (2018-03-02, 20.45) (2018-03-03, 16.32) (2018-03-04, 17.31) (2018-03-05, 19.64) (2018-03-06, 18.18) (2018-03-07, 19.77) (2018-03-08, 18.36) (2018-03-09, 17.75) (2018-03-10, 14.79) (2018-03-11, 13.80) (2018-03-12, 15.35) (2018-03-13, 13.21) (2018-03-14, 14.20) (2018-03-15, 14.35) (2018-03-16, 16.34) (2018-03-17, 12.25) (2018-03-18, 12.75) (2018-03-19, 13.09) (2018-03-20, 13.43) (2018-03-21, 14.14) (2018-03-22, 14.41) (2018-03-23, 15.62) (2018-03-24, 13.78) (2018-03-25, 13.54) (2018-03-26, 18.18) (2018-03-27, 14.36) (2018-03-28, 14.63) (2018-03-29, 15.64) (2018-03-30, 12.77) (2018-03-31, 11.48) (2018-04-01, 11.10) (2018-04-02, 12.13) (2018-04-03, 12.29) (2018-04-04, 10.97) (2018-04-05, 15.47) (2018-04-06, 13.58) (2018-04-07, 10.75) (2018-04-08, 10.49) (2018-04-09, 11.90) (2018-04-10, 12.19) (2018-04-11, 12.41) (2018-04-12, 13.47) (2018-04-13, 15.62) (2018-04-14, 12.19) (2018-04-15, 11.50) (2018-04-16, 11.89) (2018-04-17, 12.17) (2018-04-18, 14.29) (2018-04-19, 12.81) (2018-04-20, 12.53) (2018-04-21, 11.34) (2018-04-22, 11.66) (2018-04-23, 12.24) (2018-04-24, 14.32) (2018-04-25, 13.56) (2018-04-26, 14.27) (2018-04-27, 14.69) (2018-04-28, 17.58) (2018-04-29, 15.44) (2018-04-30, 16.26) (2018-05-01, 14.28) (2018-05-02, 14.72) (2018-05-03, 16.37) (2018-05-04, 14.70) (2018-05-05, 13.44) (2018-05-06, 13.67) (2018-05-07, 13.63) (2018-05-08, 16.20) (2018-05-09, 15.05) (2018-05-10, 18.43) (2018-05-11, 18.76) (2018-05-12, 13.47) (2018-05-13, 14.40) (2018-05-14, 18.39) (2018-05-15, 18.37) (2018-05-16, 18.30) (2018-05-17, 18.99) (2018-05-18, 18.72) (2018-05-19, 17.77) (2018-05-20, 16.90) (2018-05-21, 17.93) (2018-05-22, 19.40) (2018-05-23, 19.76) (2018-05-24, 18.51) (2018-05-25, 18.30) (2018-05-26, 15.82) (2018-05-27, 14.78) (2018-05-28, 21.32) (2018-05-29, 21.23) (2018-05-30, 21.43) (2018-05-31, 26.02) (2018-06-01, 22.28) (2018-06-02, 16.10) (2018-06-03, 15.44) (2018-06-04, 19.07) (2018-06-05, 17.19) (2018-06-06, 19.74) (2018-06-07, 16.98) (2018-06-08, 15.95) (2018-06-09, 12.62) (2018-06-10, 12.55) (2018-06-11, 13.95) (2018-06-12, 14.05) (2018-06-13, 14.42) (2018-06-14, 15.92) (2018-06-15, 16.80) (2018-06-16, 24.85) (2018-06-17, 11.23) (2018-06-18, 11.82) (2018-06-19, 14.43)
+        };
+
+        \end{axis}
+    \end{tikzpicture}
+    \begin{tikzpicture}
+        \begin{axis} [
+            title={Ethereum to Euro conversion rate},
+            xlabel={Time},
+            ylabel={One Ether in Euro},
+            ytick={200,300,400,500,600,700,800,900}, 
+            ymajorgrids=true, grid style=dashed,
+            date coordinates in=x, date ZERO=2018-02-01,
+            xticklabel=\month-\day,
+            width=\textwidth, height=6.5cm
+        ]
+
+        \addplot[mark=*, mark size=1pt] coordinates {
+            (2018-02-01, 890.59) (2018-02-02, 816.50) (2018-02-03, 734.20) (2018-02-04, 755.71) (2018-02-05, 671.54) (2018-02-06, 552.93) (2018-02-07, 634.48) (2018-02-08, 613.14) (2018-02-09, 658.79) (2018-02-10, 711.23) (2018-02-11, 697.69) (2018-02-12, 667.37) (2018-02-13, 701.62) (2018-02-14, 674.97) (2018-02-15, 734.74) (2018-02-16, 742.54) (2018-02-17, 753.32) (2018-02-18, 777.17) (2018-02-19, 736.76) (2018-02-20, 748.53) (2018-02-21, 731.95) (2018-02-22, 656.28) (2018-02-23, 658.69) (2018-02-24, 703.21) (2018-02-25, 674.03) (2018-02-26, 685.70) (2018-02-27, 701.50) (2018-02-28, 710.36) (2018-03-01, 694.10) (2018-03-02, 697.46) (2018-03-03, 690.40) (2018-03-04, 685.36) (2018-03-05, 683.93) (2018-03-06, 680.91) (2018-03-07, 651.24) (2018-03-08, 606.24) (2018-03-09, 568.11) (2018-03-10, 577.61) (2018-03-11, 556.52) (2018-03-12, 579.25) (2018-03-13, 563.53) (2018-03-14, 552.42) (2018-03-15, 491.86) (2018-03-16, 497.71) (2018-03-17, 494.36) (2018-03-18, 455.51) (2018-03-19, 438.64) (2018-03-20, 449.81) (2018-03-21, 452.55) (2018-03-22, 454.50) (2018-03-23, 436.22) (2018-03-24, 435.38) (2018-03-25, 420.42) (2018-03-26, 420.33) (2018-03-27, 391.39) (2018-03-28, 361.95) (2018-03-29, 360.75) (2018-03-30, 313.22) (2018-03-31, 320.63) (2018-04-01, 321.03) (2018-04-02, 307.88) (2018-04-03, 313.03) (2018-04-04, 338.59) (2018-04-05, 309.55) (2018-04-06, 313.88) (2018-04-07, 301.04) (2018-04-08, 312.06) (2018-04-09, 323.57) (2018-04-10, 323.60) (2018-04-11, 333.79) (2018-04-12, 345.44) (2018-04-13, 396.31) (2018-04-14, 396.28) (2018-04-15, 401.24) (2018-04-16, 426.16) (2018-04-17, 409.52) (2018-04-18, 402.87) (2018-04-19, 417.95) (2018-04-20, 458.83) (2018-04-21, 479.40) (2018-04-22, 487.76) (2018-04-23, 502.88) (2018-04-24, 521.19) (2018-04-25, 576.12) (2018-04-26, 504.25) (2018-04-27, 542.62) (2018-04-28, 528.54) (2018-04-29, 553.74) (2018-04-30, 561.07) (2018-05-01, 548.51) (2018-05-02, 554.78) (2018-05-03, 566.20) (2018-05-04, 651.81) (2018-05-05, 649.91) (2018-05-06, 674.16) (2018-05-07, 657.24) (2018-05-08, 627.49) (2018-05-09, 627.20) (2018-05-10, 627.76) (2018-05-11, 602.10) (2018-05-12, 564.75) (2018-05-13, 571.19) (2018-05-14, 608.07) (2018-05-15, 609.97) (2018-05-16, 594.58) (2018-05-17, 594.48) (2018-05-18, 564.50) (2018-05-19, 582.05) (2018-05-20, 581.69) (2018-05-21, 598.12) (2018-05-22, 584.35) (2018-05-23, 543.83) (2018-05-24, 496.36) (2018-05-25, 509.99) (2018-05-26, 499.53) (2018-05-27, 497.99) (2018-05-28, 484.20) (2018-05-29, 439.93) (2018-05-30, 486.89) (2018-05-31, 475.98) (2018-06-01, 488.83) (2018-06-02, 491.78) (2018-06-03, 499.79) (2018-06-04, 522.29) (2018-06-05, 501.38) (2018-06-06, 512.19) (2018-06-07, 507.78) (2018-06-08, 504.63) (2018-06-09, 501.25) (2018-06-10, 493.50) (2018-06-11, 443.76) (2018-06-12, 449.39) (2018-06-13, 421.42) (2018-06-14, 402.28) (2018-06-15, 446.75) (2018-06-16, 417.75) (2018-06-17, 424.32) (2018-06-18, 423.95) (2018-06-19, 440.41) (2018-06-20, 458.97)
+        };
+
+        \end{axis}
+    \end{tikzpicture}
+
+    \begin{tikzpicture}
+        \begin{axis} [
+            title={Cost in Euro of executing the standard scenario},
+            xlabel={Time}, ylabel={Price [€]},
+            ytick={2, 4, 6, 8, 10, 12, 14}, 
+            ymax=15,
+            ymajorgrids=true, grid style=dashed,
+            date coordinates in=x, date ZERO=2018-02-01,
+            xticklabel=\month-\day,
+            width=\textwidth, height=6.5cm
+        ]
+
+        \addplot[mark=*, mark size=1pt] coordinates {
+            (2018-02-01, 14.20) (2018-02-02, 11.39) (2018-02-03, 8.48) (2018-02-04, 8.65) (2018-02-05, 7.11) (2018-02-06, 6.10) (2018-02-07, 6.68) (2018-02-08, 6.04) (2018-02-09, 5.94) (2018-02-10, 6.68) (2018-02-11, 6.02) (2018-02-12, 5.48) (2018-02-13, 6.00) (2018-02-14, 5.99) (2018-02-15, 6.25) (2018-02-16, 6.32) (2018-02-17, 6.49) (2018-02-18, 7.08) (2018-02-19, 5.78) (2018-02-20, 5.97) (2018-02-21, 5.59) (2018-02-22, 4.63) (2018-02-23, 4.89) (2018-02-24, 5.37) (2018-02-25, 4.45) (2018-02-26, 4.80) (2018-02-27, 4.95) (2018-02-28, 5.65) (2018-03-01, 5.06) (2018-03-02, 5.62) (2018-03-03, 4.44) (2018-03-04, 4.68) (2018-03-05, 5.30) (2018-03-06, 4.88) (2018-03-07, 5.08) (2018-03-08, 4.39) (2018-03-09, 3.98) (2018-03-10, 3.37) (2018-03-11, 3.03) (2018-03-12, 3.51) (2018-03-13, 2.93) (2018-03-14, 3.09) (2018-03-15, 2.78) (2018-03-16, 3.21) (2018-03-17, 2.39) (2018-03-18, 2.29) (2018-03-19, 2.26) (2018-03-20, 2.38) (2018-03-21, 2.52) (2018-03-22, 2.58) (2018-03-23, 2.69) (2018-03-24, 2.37) (2018-03-25, 2.24) (2018-03-26, 3.01) (2018-03-27, 2.22) (2018-03-28, 2.09) (2018-03-29, 2.22) (2018-03-30, 1.58) (2018-03-31, 1.45) (2018-04-01, 1.41) (2018-04-02, 1.47) (2018-04-03, 1.52) (2018-04-04, 1.46) (2018-04-05, 1.89) (2018-04-06, 1.68) (2018-04-07, 1.28) (2018-04-08, 1.29) (2018-04-09, 1.52) (2018-04-10, 1.55) (2018-04-11, 1.63) (2018-04-12, 1.83) (2018-04-13, 2.44) (2018-04-14, 1.90) (2018-04-15, 1.82) (2018-04-16, 2.00) (2018-04-17, 1.97) (2018-04-18, 2.27) (2018-04-19, 2.11) (2018-04-20, 2.27) (2018-04-21, 2.14) (2018-04-22, 2.24) (2018-04-23, 2.43) (2018-04-24, 2.94) (2018-04-25, 3.08) (2018-04-26, 2.84) (2018-04-27, 3.14) (2018-04-28, 3.66) (2018-04-29, 3.37) (2018-04-30, 3.60) (2018-05-01, 3.09) (2018-05-02, 3.22) (2018-05-03, 3.65) (2018-05-04, 3.78) (2018-05-05, 3.44) (2018-05-06, 3.63) (2018-05-07, 3.53) (2018-05-08, 4.01) (2018-05-09, 3.72) (2018-05-10, 4.56) (2018-05-11, 4.45) (2018-05-12, 3.00) (2018-05-13, 3.24) (2018-05-14, 4.41) (2018-05-15, 4.42) (2018-05-16, 4.29) (2018-05-17, 4.45) (2018-05-18, 4.17) (2018-05-19, 4.08) (2018-05-20, 3.87) (2018-05-21, 4.23) (2018-05-22, 4.47) (2018-05-23, 4.24) (2018-05-24, 3.62) (2018-05-25, 3.68) (2018-05-26, 3.11) (2018-05-27, 2.90) (2018-05-28, 4.07) (2018-05-29, 3.68) (2018-05-30, 4.11) (2018-05-31, 4.88) (2018-06-01, 4.29) (2018-06-02, 3.12) (2018-06-03, 3.04) (2018-06-04, 3.93) (2018-06-05, 3.40) (2018-06-06, 3.99) (2018-06-07, 3.40) (2018-06-08, 3.17) (2018-06-09, 2.49) (2018-06-10, 2.44) (2018-06-11, 2.44) (2018-06-12, 2.49) (2018-06-13, 2.40) (2018-06-14, 2.52) (2018-06-15, 2.96) (2018-06-16, 4.09) (2018-06-17, 1.88) (2018-06-18, 1.98) (2018-06-19, 2.50)
+        };
+
+        \end{axis}
+    \end{tikzpicture}
+\end{center}
+\end{figure}
+
+The last cost that has to be discussed is the contract deployment cost. The deployment scheme we used is the one suggested by the Truffle framework. The first deployment on a chain requires deploying two contracts: the actual smart contract we are interested in and and additional \code{Migrations} contract managed by Truffle that keeps track of which migration scripts have been run on the current chain and which have not. Deploying these two contracts on the Rinkeby test network has some significant costs, as described in table \ref{table:deployment-costs}. This data can be obtained by inspecting the data associated with the following transactions:
+
+\begin{itemize}
+    \item \txmigrationsdepoly: deployment \\ of the \code{Migrations} smart contract
+    \item \txupdatemiga: update of \\ the last successful migration
+    \item \txmaindeploy: deployment \\ of the \code{Main} smart contract
+    \item \txupdatemigb: update of \\ the last successful migration
+\end{itemize}
+
+\begin{table}[tp]
+    \caption[Cost of deploying the smart contract]{Costs of deploying the smart contract. This table assumes a \code{gasPrice} of \gaspricegwei and an exchange rate between Ether and Euro of \ethtoeur}
+    \centering
+    \label{table:deployment-costs}
+    \begin{tabular}{c c c c}
+        \toprule
+        Contract & Gas consumed [Units] & Ether cost [GWei] & Euro cost [€]\\ 
+        \midrule
+        Migrations & 319470 & 5434537.14 & 2.92 \\ Main & 3158630 & 53731780.87 & 28.87 \\ Total & 3478100 & 59166318.01 & 31.79 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+From these results, we can see that the development costs for this smart contract are quite high: every update to the application requires deactivating the old contract and deploying a new one, incurring in the associated costs. Proper testing and extensive review before every deployment are therefore necessary in order to avoid any unnecessary deployment costs.
+
+\subsection{Discussion}
+As already said, the true solution to the problem encountered while desining this application would be verifiable computing. Unfortunately, the technology is not viable yet and this forced us to take an alternative path. Overall, we think we succeded in our goal of providing a decentralized market for computational power in which the incentives put in place offer some degree of reliablity to the users of the system.
+
+However, some important consideration that emerged from the development of our proof of concept have to be discussed. In particular, the system has some non-negligible costs for the users and these fees are much higher than those offered by common cloud providers: this could significantly slow down the adoption of our solution. An additional concern is the overall slowness of the system: in order to be mined, every transaction takes a minimum of fifteen seconds (the mining time of a block) and this could pose some severe limitions on the scale at which this system could be employed.
+
+A final point that should be considered is the difficulty of updating the smart contract (that is, deactivating the old one and deploying a new one). The costs involved make this process very onerous and limit the number of updates that can be released. Another aspect of this update procedure, that makes it even more difficult, is that all the users of the service must be notified of the address of the new contract: this is notoriously difficult in a decentralized environment like the blockchain one.

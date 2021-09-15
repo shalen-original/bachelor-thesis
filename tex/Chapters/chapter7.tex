@@ -1,0 +1,18 @@
+%!TEX root = ../thesis.tex
+
+\section{Conclusion and future work}
+\label{sect:conclusions-and-future-work}
+
+\subsection{Smart contract}
+The smart contract implementation that we developed takes into consideration most of the use cases described in section \ref{sect:requirements}. However, there are still some aspects that should be improved.  
+In particular, in the current version, the handling of the ownership of the contract and of whom can perform auditing duties is very limited. The current system could be improved by having more than a single trusted member and by requiring some kind of voting procedure before changing the contracts' configuration parameters. Another enhancement would be to better distribute the auditing duties, instead of forcing the contract's owner to be the only auditor.  
+
+Another situation in which some improvements are required is the result's submission methodology, which, as of now, is again very limited: for example, the publisher could specify a public key with which the results should be encrypted before being uploaded.
+A final enhancement would be to provide an administrative method that allows to perform some garbage collection: as of now, all the metadata regarding past computations (e.g. Docker image name, publisher address, ...) are stored on chain. There should be a way for someone with administrative rights to trigger a cleanup that removes all computations that cannot change state anymore.
+
+\subsection{Client application}
+The client application is really bare-bone and has been developed only to have a practical way of interacting with the smart contract.  Further versions of this application could be improved in several way and would probably require a complete redesing of the user interface.
+Additionally, this client application should become more automatic: in the current version, many actions are manual. In particular, accepting to perform a published computation is a manual step which could be automated: the farmer should simply specify some contraints (e.g. on the reward or the stake fee) and then the application should automatically try to accept the computation that satisfy these contraints. Another improvement could be to automatically download the results of a computation when they are accepted and check that the hash of the downloaded archive matches the one reported by the farmer.
+
+An additional enhancement could be to only consider Docker image names that contain the image digest and automatically discard all published computations that rely on image tags instead.
+A final improvement that should be done is to embedd auditing functionalities in the application: as of now, the client application is not able to act as an auditor.

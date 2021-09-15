@@ -1,0 +1,281 @@
+<!DOCTYPE html> 
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Client</title>
+
+        <style>
+            .hidden {
+                display: none !important;
+            }
+        </style>
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.0/css/bulma.min.css">
+        <script defer src="https://use.fontawesome.com/releases/v5.0.7/js/all.js"></script>
+    </head>
+    <body>
+        <nav class="navbar" role="navigation" aria-label="main navigation">
+            <div class="navbar-brand">
+                <a class="navbar-item" href="#/">Computations</a>
+                <a class="navbar-item" href="#/publish">Publish</a>
+                <a class="navbar-item" href="#/estimate">Estimate</a>
+            </div>
+        </nav>
+        <section id="comps" class="section">
+            <div class="container">
+                <div class="level">
+                    <div class="level-left">
+                        <h1 class="title">Computations</h1>
+                    </div>
+                    <div class="level-right">
+                        <button id="refetchAll" class="button is-primary">Fetch all computations</button>
+                    </div>
+                </div>
+                <div id="computations-container">
+                    <ul id="computations">
+                    </ul>
+                </div>
+            </div>
+            <template id="computation">
+                <li class="box">
+                    <div class="level">
+                        <div class="level-left">
+                            <div>
+                                <strong>ID: </strong>
+                                <span data-field="id"></span>
+                                <span>(</span>
+                                <span data-field="status"></span>
+                                <span>)</span>
+                            </div>
+                        </div>
+                        <div class="level-right">
+                            <div class="field is-grouped">
+                                <div class="control">
+                                    <button id="perform" class="button is-primary">Perform</button>
+                                </div>
+                                <div class="control">
+                                    <button id="accept" class="button is-primary hidden">Accept</button>
+                                </div>
+                                <div class="control">
+                                    <button id="reject" class="button is-primary hidden">Reject</button>
+                                </div>
+                                <div class="control">
+                                    <button id="challenge-farmer-disappeared" class="button is-primary hidden">Challenge farmer</button>
+                                </div>
+                                <div class="control">
+                                    <button id="challenge-result-ignored" class="button is-primary hidden">Challenge result ignored</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <hr />
+                    <div>
+                        <strong>Published by:</strong>
+                        <span data-field="publisher"></span>
+                    </div>
+                    <div>
+                        <strong>Docker image: </strong>
+                        <span data-field="dockerImageName"></span>
+                    </div>
+                    <div>
+                        <strong>Reward: </strong>
+                        <span data-field="weiReward"></span>
+                        <span> wei</span>
+                    </div>
+                    <div>
+                        <strong>Min stake fee: </strong>
+                        <span data-field="minStakeFee"></span>
+                        <span> wei</span>
+                    </div>
+                    <div>
+                        <strong>Assigned to: </strong>
+                        <span data-field="assignedTo"></span>
+                    </div>
+                    <div>
+                        <strong>Assignation timestamp: </strong>
+                        <span data-field="assignationTimestamp"></span>
+                    </div>
+                    <div>
+                        <strong>Stake fee: </strong>
+                        <span data-field="stakeFee"></span>
+                        <span> wei</span>
+                    </div>
+                    <div>
+                        <strong>Result hash: </strong>
+                        <span data-field="resultHash"></span>
+                    </div>
+                    <div>
+                        <strong>Result link: </strong>
+                        <span data-field="resultLink"></span>
+                    </div>
+                    <div>
+                        <strong>Result submission timestamp: </strong>
+                        <span data-field="resultSubmissionTimestamp"></span>
+                    </div>
+                    <div>
+                        <strong>Audit fee: </strong>
+                        <span data-field="auditFee"></span>
+                        <span> wei</span>
+                    </div>
+                </li>
+            </template>
+        </section>
+        <section id="publish" class="section hidden">
+            <div class="container">
+                <h1 class="title">Publish new computation</h1>
+                <div>
+                    <div class="field">
+                        <label class="label">Docker Image Name</label>
+                        <div class="control">
+                            <input id="dockername" class="input" type="text" placeholder="registry/image:tag">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label">Wei reward</label>
+                        <div class="control">
+                            <input id="wei" class="input" type="number" placeholder="5000" min="1">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label">Min stake fee</label>
+                        <div class="control">
+                            <input id="weiStakeFee" class="input" type="number" placeholder="5000" min="1">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="control">
+                            <button id="publishComp" class="button is-link">Submit</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section id="estimate" class="section hidden">
+            <div class="container">
+                <div class="level">
+                    <div class="level-left">
+                        <h1 class="title">Some prices</h1>
+                    </div>
+                    <div class="level-right">
+                        <div class="field is-grouped">
+                            <div class="control">
+                                <button id="updateConstants" class="button is-primary">Update constants</button>
+                            </div>
+                            <div class="control">
+                                <button id="computeEst" class="button is-link">Compute estimates</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content">
+                    <h4>Constants</h4>
+                    <ul>
+                        <li>Gas price: <span id="gasPriceInGwei"></span> gwei</li>
+                        <li>1 ETH = <span id="ethToEur"></span> EUR</li>
+                    </ul>
+                    <p>Check updated gas price <a href="https://etherscan.io/chart/gasprice">here</a>.</p>
+                    <h4>Gas used for each method:</h4>
+                    <ol>
+                        <li>requestComputation: <span data-type="gas" data-method="requestComputation"></span></li>
+                        <li>acceptComputation: <span data-type="gas" data-method="acceptComputation"></span></li>
+                        <li>computationDone: <span data-type="gas" data-method="computationDone"></span></li>
+                        <li>acceptResult: <span data-type="gas" data-method="acceptResult"></span></li>
+                        <li>withdrawReward: <span data-type="gas" data-method="withdrawReward"></span></li>
+                    </ol>
+                    <p>
+                        <strong>Total: </strong>
+                        <span data-type="gas" data-method="total"></span>
+                    </p>
+
+                    <h4>Converted into gwei</h4>
+                    <ol>
+                        <li>requestComputation: <span data-type="gwei" data-method="requestComputation"></span></li>
+                        <li>acceptComputation: <span data-type="gwei" data-method="acceptComputation"></span></li>
+                        <li>computationDone: <span data-type="gwei" data-method="computationDone"></span></li>
+                        <li>acceptResult: <span data-type="gwei" data-method="acceptResult"></span></li>
+                        <li>withdrawReward: <span data-type="gwei" data-method="withdrawReward"></span></li>
+                    </ol>
+                    <p>
+                        <strong>Total: </strong>
+                        <span data-type="gwei" data-method="total"></span>
+                    </p>
+
+                    <h4>Converted into EUR</h4>
+                    <ol>
+                        <li>requestComputation: <span data-type="eur" data-method="requestComputation"></span></li>
+                        <li>acceptComputation: <span data-type="eur" data-method="acceptComputation"></span></li>
+                        <li>computationDone: <span data-type="eur" data-method="computationDone"></span></li>
+                        <li>acceptResult: <span data-type="eur" data-method="acceptResult"></span></li>
+                        <li>withdrawReward: <span data-type="eur" data-method="withdrawReward"></span></li>
+                    </ol>
+                    <p> <strong>Total: </strong>
+                        <span data-type="eur" data-method="total"></span>
+                    </p>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- Mind the order -->
+        <script src="/main.js"></script>
+        <script src="/router.js"></script>
+        <script src="/estimate.js"></script>
+        <script src="/render.js"></script>
+        <script>
+            globals.publishInput.addEventListener("click", (evt) => {
+                fetch("/api/computations", {
+                    method: 'post',
+                    body: JSON.stringify({
+                        dockerImage: globals.dockerImageInput.value, 
+                        weiReward: globals.weiInput.value,
+                        minStakeFee: globals.weiStakeFeeInput.value
+                    }),
+                    headers: new Headers({"Content-Type": "application/json"})
+                }).then(res => {
+                    globals.dockerImageInput.value = "";
+                    globals.weiInput.value = "";
+                    globals.weiStakeFeeInput.value = "";
+                    fixLocation("/");
+                })
+                .catch(err => console.log(err));
+            });
+
+            globals.refetchAllBtn.addEventListener("click", (evt) => {
+                fetch("/api/computations")
+                    .then(res => res.json())
+                    .then(comps => {
+                        globals.computations = comps;
+                        renderComputations(globals.computations);
+                    })
+                    .catch(err => console.log(err));
+            });
+        </script>
+        <script>
+            const socket = new WebSocket('ws://localhost:8080');
+            socket.addEventListener('open', () => {});
+
+            socket.addEventListener('message', event => {
+                const evt = JSON.parse(event.data);
+                console.log("Received message:");
+                console.log(evt);
+
+                // Remove the computation that changed from the list
+                globals.computations = globals.computations.filter(comp => comp.id !== evt.data.id);
+
+                // Fetch the new version of the updated computation,
+                // push to the list of computations and redraw 
+                fetch(`/api/computations/${evt.data.id}`)
+                    .then(response => response.json())
+                    .then(comp => {
+                        globals.computations.push(comp);
+                        renderComputations(globals.computations);
+                    }).catch(err => {
+                        console.log("Cannot fetch computation details")
+                        console.log(err);
+                    });
+            });
+        </script>
+    </body>
+</html>

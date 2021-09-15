@@ -1,0 +1,26 @@
+{
+  "name": "bachelor-thesis-matteo-nardini",
+  "version": "1.0.0",
+  "description": "Bachelor thesis of Matteo Nardini",
+  "main": "README.md",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build-diagrams": "node scripts/build-diagrams.js",
+    "web3": "node -i -e \"const Web3 = require('web3'); const web3 = new Web3(); web3.setProvider(new Web3.providers.HttpProvider('http://localhost:8545'));\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@gitlab.com/shalen/bachelor-thesis.git"
+  },
+  "author": "Matteo Nardini",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "bugs": {
+    "url": "https://gitlab.com/shalen/bachelor-thesis/issues"
+  },
+  "homepage": "https://gitlab.com/shalen/bachelor-thesis#README",
+  "devDependencies": {
+    "chalk": "^2.3.1",
+    "shelljs": "^0.8.1",
+    "web3": "^1.0.0-beta.30"
+  }
+}

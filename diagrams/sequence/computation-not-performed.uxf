@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="14.3.0">
+  <zoom_level>11</zoom_level>
+  <element>
+    <id>UMLGeneric</id>
+    <coordinates>
+      <x>308</x>
+      <y>0</y>
+      <w>110</w>
+      <h>44</h>
+    </coordinates>
+    <panel_attributes>Farmer B
+valign=center</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>352</x>
+      <y>33</y>
+      <w>33</w>
+      <h>759</h>
+    </coordinates>
+    <panel_attributes>lt=.</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;670.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLGeneric</id>
+    <coordinates>
+      <x>682</x>
+      <y>0</y>
+      <w>132</w>
+      <h>44</h>
+    </coordinates>
+    <panel_attributes>Smart 
+contract
+valign=center</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>737</x>
+      <y>33</y>
+      <w>33</w>
+      <h>759</h>
+    </coordinates>
+    <panel_attributes>lt=.</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;670.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLGeneric</id>
+    <coordinates>
+      <x>737</x>
+      <y>121</y>
+      <w>22</w>
+      <h>616</h>
+    </coordinates>
+    <panel_attributes>layer=10
+transparency=0</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLGeneric</id>
+    <coordinates>
+      <x>165</x>
+      <y>0</y>
+      <w>110</w>
+      <h>44</h>
+    </coordinates>
+    <panel_attributes>Farmer A
+valign=center</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>209</x>
+      <y>33</y>
+      <w>33</w>
+      <h>759</h>
+    </coordinates>
+    <panel_attributes>lt=.
+</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;670.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLGeneric</id>
+    <coordinates>
+      <x>209</x>
+      <y>121</y>
+      <w>22</w>
+      <h>88</h>
+    </coordinates>
+    <panel_attributes>layer=10
+transparency=0</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>220</x>
+      <y>143</y>
+      <w>539</w>
+      <h>66</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+receive event for
+assignment of computation
+</panel_attributes>
+    <additional_attributes>10.0;20.0;470.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLGeneric</id>
+    <coordinates>
+      <x>352</x>
+      <y>286</y>
+      <w>22</w>
+      <h>264</h>
+    </coordinates>
+    <panel_attributes>layer=10
+transparency=0</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLGeneric</id>
+    <coordinates>
+      <x>121</x>
+      <y>198</y>
+      <w>187</w>
+      <h>77</h>
+    </coordinates>
+    <panel_attributes>Farmer A does not sent
+"computation performed"
+(disappears)
+valign=center
+transparency=0
+layer=20</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>363</x>
+      <y>275</y>
+      <w>396</w>
+      <h>55</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-
+challenge computation
+for disappeared farmer</panel_attributes>
+    <additional_attributes>340.0;20.0;10.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>748</x>
+      <y>297</y>
+      <w>242</w>
+      <h>209</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-
+check that the
+timeout has
+expired
+
+reserve computation
+for B and revoke
+reservation for A
+
+emit "computation
+assigned" event
+</panel_attributes>
+    <additional_attributes>10.0;170.0;60.0;170.0;60.0;10.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLFrame</id>
+    <coordinates>
+      <x>330</x>
+      <y>506</y>
+      <w>462</w>
+      <h>77</h>
+    </coordinates>
+    <panel_attributes>ref
+layer=20
+transparency=0
+--
+Proceed as in "Standard scenario"</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLGeneric</id>
+    <coordinates>
+      <x>451</x>
+      <y>0</y>
+      <w>110</w>
+      <h>44</h>
+    </coordinates>
+    <panel_attributes>Farmer C
+valign=center</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>495</x>
+      <y>33</y>
+      <w>33</w>
+      <h>759</h>
+    </coordinates>
+    <panel_attributes>lt=.</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;670.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLGeneric</id>
+    <coordinates>
+      <x>495</x>
+      <y>605</y>
+      <w>22</w>
+      <h>132</h>
+    </coordinates>
+    <panel_attributes>layer=10
+transparency=0</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>748</x>
+      <y>616</y>
+      <w>231</w>
+      <h>121</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-
+check that timeout
+has expired
+
+it has not 
+(no event emitted)
+</panel_attributes>
+    <additional_attributes>10.0;80.0;60.0;80.0;60.0;10.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLFrame</id>
+    <coordinates>
+      <x>121</x>
+      <y>55</y>
+      <w>715</w>
+      <h>77</h>
+    </coordinates>
+    <panel_attributes>ref
+layer=20
+transparency=0
+--
+As in "Standard scenario"</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>506</x>
+      <y>594</y>
+      <w>253</w>
+      <h>55</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-
+challenge computation
+for disappeared farmer</panel_attributes>
+    <additional_attributes>210.0;20.0;10.0;20.0</additional_attributes>
+  </element>
+</diagram>

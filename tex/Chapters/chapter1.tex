@@ -1,0 +1,23 @@
+%!TEX root = ../thesis.tex
+
+\section{Introduction}
+
+\subsection{Background and motivation}
+Cloud providers allow anyone to perform complex computations at an affordable cost. Traditionally, in order to execute some intensive computation, one had to buy the hardware needed to run it in acceptable times, configure it and only then run the actual computation. This has several drawbacks, among which the initial cost of the hardware and the added complexity of maintaning it, which often were too high.
+
+With the advent of cloud providers like \emph{Amazon Web Services}, \emph{Google Cloud Platform} and \emph{Microsoft Azure}, this procedure became much more accessible: instead of having to buy the hardware and configure it, one could simply rent for a limited amount of time one (or more) already-configured virtual machine with the required characteristics from one of these providers and use it to perform the needed computation. This workflow is able to significantly reduce costs and has become a common usage pattern.
+
+However, this shift from on-premise hardware to cloud providers requires the users to trust the providers: whenever a computation is offloaded to a virtual machine in the cloud, the issuer has to rely on the fact that the provider will not interfere with the normal execution of the computation and that it will keep the involved data private. Additionally, the high costs required to become a cloud provider make this an oligarchical market, in which only few providers are available: this makes it possible for them to collude and, for example, to artificially increase prices for their services.
+
+\subsection{Our goal}
+The recent developments in decentralized computing platforms, virtual currencies and markets has led us to question if and how they could be applied to the specific case of offloading computations.
+We would like to explore the possibility of selling and buying computational power in a decentralized manner, allowing also small players to offer their computational capabilities and therefore resolving the problem of the centralization of cloud providers. In this initial phase, we would like to focus on the simpler case of deterministic computations that do not involve any network connection or inter-process communication: in future works, other possibilities may be explored.
+Additionally, we would like to provide a system in which who performs the computation cannot cheat: in this way, we would also eliminate the problem of having to trust the fact that the performer of the computation will not interfere with it.
+In this project we are not going to focus on the privacy-related aspects of this problem: in particular, we will assume that the computation to be executed and its input and output data can be public.
+
+\subsection{Roadmap}
+The remaining of this thesis is structured as follows. Section \ref{sect:state-of-the-art} describes some of the current technologies that could be applied to our problem and why they are not feasible. 
+
+Section \ref{sect:requirements} lists in more details the actual requirements that our solution will have to meet and section \ref{sect:preliminaries} gives a quick introduction to container technology and to the Ethereum blockchain. Section \ref{sect:proposed-solution} explains in details how our solution to the problem works and its architecture, describing also some significant implementation details. Section \ref{sect:evaluation-and-discussion} analyses the solution we build, presenting some data on the overhead costs that have to be considered while working in a blockchain environment.
+
+Finally, section \ref{sect:conclusions-and-future-work} describes some of the upgrades that should be included in future versions of our application.

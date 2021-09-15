@@ -1,0 +1,25 @@
+%!TEX root = ../thesis.tex
+
+\section{Preliminaries}
+\label{sect:preliminaries}
+
+\subsection{Docker}
+In order to build a decentralized market for computational power, we needed a standard and portable way of representing a computation and its environmnent. The naive idea could be to simply distribute the application's binaries, but this poses a series of challenges: even simply agreeing on the command to use to start the application could be problematic.
+
+The solution to this problem is to publish the computation using a container, that is, a light-weight virtual machine that can contain an application and all the information needed to run it. Using containers offers a series of benefits:
+\begin{itemize}
+    \item Containers are isolated from the host system running them. This means that farmers can execute computations without compromising their system.
+    \item Containers are volatile, in the sense that every modification from the starting state is not persisted when the container is shut down: therefore, executing a container for a deterministic application twice will yield the same exact results.
+    \item A single host system can run multiple containers, allowing farmers to perform multiple computations simultaneously.
+    \item Containers can be limited, so that no single container can completely exhaust a resource of the hosting system.
+    \item Containers are portable, in the sense that once a container is assembled, every system for which that specific container engine is implemented can run that container.
+    \item The `inside' of the container can be completely configured by whoever creates it, allowing the publishers to configure the execution environment of the published application as they want.
+    \item Containers are easy to create, use and share.
+\end{itemize}
+
+An industry-standard implmentation of the container technology is Docker. This implementation is open-source and freely available and is used by many software vendors to run their systems. Therefore, we chose Docker \cite{docker-website} as the way of packaging and publishing computations in our system.
+
+\subsection{Ethereum and the blockchain}
+Among the many blockchain platforms available, one of the few that offers a Turing-complete computing environment is the Ethereum blockchain. Additionally to the standard transactions that allow to exchange the cryptocurrency, Ethereum transactions can also be used to either create a smart contract or to invoke some method on an already-deployed one. A smart contract is an application whoose executable code and internal state are stored on the blockchain. Whenever a user creates a transaction that invokes a method on a smart contract, the piece of program associated with that method is executed and validated by every peer that accepts the block containing that transaction. This allows users to create decentralized applications (DApps) that are stored and executed on the blockchain and that inherit all the properties that are usual in a blockchain enviroment: all the nodes agree on the current state of the various DApps and the history of each modification to this state is recorded on an append-only ledger.
+
+In our case, we plan to write one of these smart contract and to use it as the backbone of our application. By creating a DApp we can easily create a distributed marketplace, where publishers and farmers can agree on which computations should be executed and which are the associated rewards and fees.

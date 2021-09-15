@@ -1,0 +1,13 @@
+{
+    "server": {
+        "port": 8081
+    },
+    "dapp_address": "0xd82429497c69208a358ece305efc7aba4b237fe2",
+    "client_address": "0xccf62fbb338b4efd9044347d7cff7704bc3e65ea",
+    "eth_node_url": "ws://127.0.0.1:8546",
+    "eth_node_declared_origin": "ocGzKhQN7YhURdhJPmYx9CxJW",
+    "result": {
+        "folder": "D:\\Test",
+        "rejection_fee": 100
+    }
+}

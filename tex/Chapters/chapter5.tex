@@ -1,0 +1,169 @@
+%!TEX root = ../thesis.tex
+
+\section{Proposed solution}
+\label{sect:proposed-solution}
+
+\subsection{Protocol}
+\label{sect:protocol}
+
+\subsubsection{Standard scenario}
+Our work on the project implementation begun by designing the protocol that the smart contract should use when communicating with the other parties. The sequence diagram in figure \ref{figs:sequence-standard} describes the standard scenario, in which both the publisher and the farmer behave correctly. 
+
+\begin{figure}
+\caption[Standard scenario]{Sequence diagram describing the standard scenario of interaction with the smart contract}
+\label{figs:sequence-standard}
+\begin{center}
+    \includegraphics[width=0.8\textwidth]{Figs/diagrams/sequence/standard.png}
+\end{center}
+\end{figure}
+
+As can be seen from the diagram, the process is initiated by the publisher, which interacts with the smart contract to publish a new computation request. This request contains some parameters describing the computation and transfers to the contract's account the amount of Ether that corresponds to the reward for performing this computation. After doing some validation on the input provided by the publisher, the smart contract emits a \code{ComputationPublished} event to signal that a new computation has been published. This event is broadcasted on the blockchain and all the farmers can listen for it.
+
+Every farmer receives this event and decides whether to perform this computation or not. When a farmer chooses to execute this computation, he or she sends a request to reserve the computation to the smart contract, so that other farmers know that that computation is already taken. At this point, the smart contracts checks that that computation is still available: if this is the case, it assigns that computation to the requesting farmer and publishes a \code{ComputationAssigned} event. The requesting farmer can use this event as a confirmation that the request sent was accepted and thus can start executing that computation. Other farmers can listen for this event and know that that computation is already being performed. If the computation was already assigned to someone else, the smart contract simply rejects the request: the farmer will not see the \code{ComputationAssigned} events and thus will understand that the reservation request was denyed, as shown by the diagram in figure \ref{figs:sequence-already-assigned}.
+
+\begin{figure}
+\caption[Computation already reserved scenario]{Sequence diagram describing the alternative scenario in which a computation was already reserved for another farmer}
+\label{figs:sequence-already-assigned}
+\begin{center}
+    \includegraphics[width=0.9\textwidth]{Figs/diagrams/sequence/computation-already-reserved.png}
+\end{center}
+\end{figure}
+
+When the computation is performed, the farmer can send to the smart contract a message contatining the result hash: the smart contract checks that the farmer is the one for which that computation is reserved and, if this is the case, it saves the hash and emits a \code{ComputationDone} event. The publisher of the computation can listen for this event and promptly retrieve the result of the computation from the publisher (mode details in subsection \ref{sect:impl-details}). After checking the results, the publisher can choose to either accept or reject the results: if the results are accepted, the smart contract marks the computation as accepted and emits a \code{ResultAccepted} event. The farmer that executed this computation can listen for this event: when it is received, the reward can be withdrawn.
+
+\subsubsection{Result rejected}
+Unfortunately, verifiable computing is not practical yet. This means that the correctness of a computation has to be checked in another way: we decided to create an adjudicated protocol in which a trusted third party performs auditing duties, but only when the publisher rejects the results submitted by the farmer. This decision was made under the assumption that most of the users on the platform will behave honestly, especially given the incentives described below. The sequence diagram describing this part of the protocol is shown in figure \ref{figs:result-rejected}.
+
+\begin{figure}
+\caption[Result rejected scenario]{Sequence diagram describing what happens when a publisher rejects the submitted results}
+\label{figs:result-rejected}
+\begin{center}
+    \includegraphics[width=0.9\textwidth]{Figs/diagrams/sequence/result-rejected.png}
+\end{center}
+\end{figure}
+
+When a publisher rejects a result, the trusted auditor comes into play. This auditor re-executes the published computation and then computes the hash of the result he or she obtains. This hash is then sent to the smart contract, that confronts it with the hash submitted by the farmer. If the two hashes matches, then the farmer behaved properly, which means that the publisher should have accepted the result: the smart contract acknowledges this and marks the farmer as allowed to withdraw the reward. If the two hashes do not match, then either the farmer was dishonest or used faulty hardware or software and the publisher rejection is confirmed.
+
+In order to encourage the parties to behave properly, we introduced in the protcol some incentives in the form of a \emph{minimum stake fee}, a \emph{stake fee} and an \emph{audit fee}. Each computation is published with a minimum stake fee decided by the publisher. When the farmer submits the result of a computation, he or she has to pay as part of the transaction an amount that is at least as much as indicated in the minium stake fee: this payment is the farmer's stake fee and is kept temporarily on hold by the smart contract. If the publisher accepts the result, the farmer can withdraw both the reward for the computation and the stake amount payed when submitting the result. If the publisher rejects the result, the farmer's stake fee is kept on hold until the auditor validates the rejection. If the auditor proves that the farmer submitted a wrong result (either because of a dishonest behaviour or because of faulty hardware or software), the stake amount put on hold by the farmer is given to the publisher and the farmer loses every right on it.\footnote{Some may argue that the punishment for a farmer with faulty hardware should be lighter than the one for a cheaty farmer. We agree with this thought, but the fact is that the smart contract has no way of differentiating the two behaviours, thus we prefer to err on the side of caution. A honest farmer should interpret the result rejection as a signal that their system needs to be fixed.} If the auditor proves that the farmer submitted a correct result, the farmer is allowed to withdraw both the reward and the stake fee.
+
+If this was the only incentive put in place, then every publisher would reject the submitted results, in order to have them checked by the auditor for free. In order to avoid this behaviour, we designed an additional incentive called \emph{audit fee}. Alongside with the result rejection, the publisher has to pay an audit fee. This audit fee is given to the auditor as soon as the auditing duties regarding this computation are done, independently from the verdict of the auditor. The audit fee is not fixed and can be choosen by the publisher: auditors will privilege computations with higher audit fee, therefore a publisher desiring a quick check will have to pay an higher fee.
+
+The combination of \emph{stake fee} for the farmers and \emph{audit fee} for the publisher should give the right incentives to the platform and reduce the number of situations in which entities choose to behave dishonestly.
+
+\subsubsection{Other alternative scenarios}
+While creating the protocol described above, we detected a couple of situations in which there could be deviations from the standard scenario.
+
+The first potential problem happens when a farmer accepts a computation and then disappears. In this case, another farmer can challenge the assignment of the computation as shown in figure \ref{figs:sequence-computation-not-performed}.
+\begin{figure}
+\caption[Computation not performed scenario]{Sequence diagram describing the alternative scenario in which the farmer to whom the computation is assigned disappears}
+\label{figs:sequence-computation-not-performed}
+\begin{center}
+    \includegraphics[width=0.9\textwidth]{Figs/diagrams/sequence/computation-not-performed.png}
+\end{center}
+\end{figure}
+
+The second problem happens when the publisher disappears without neither accepting or rejecting the results. In this case, after a certain period of time has passed, the farmer that performed the computation should be able to challenge the publisher and be rewared in any case, as shown in the sequence diagram in figure \ref{figs:sequence-publisher-disappears}.
+\begin{figure}
+\caption[Computation result not accepted nor refused scenario]{Sequence diagram describing the alternative scenario in which the publisher of a computation disappears without neither accepting nor refusing the results}
+\label{figs:sequence-publisher-disappears}
+\begin{center}
+    \includegraphics[width=0.9\textwidth]{Figs/diagrams/sequence/result-not-accepted-nor-refused.png}
+\end{center}
+\end{figure}
+
+\subsection{Architecture}
+In order to implement the protocol described in subsection \ref{sect:protocol} we devised a system divided in two main component: a smart contract living on the blockchain and a client application that interacts with it.
+
+The smart contract is written in the Solidity programming language, which is the standard language for the Ethereum blockchain. It stores on chain a list of \code{Computation} objects, where each object contains all the details of that computation. The public interface of the contract is composed by a list of methods that implement the protocol described in the previous subsection. Each of these methods receives some input from the client application, performs some checks related to the status of the computation and determines if the request is valid. If not, an error is thrown. If yes, the requested modifications are applied to the stored computation object and the required events are emitted. For each new published computation, the contract generates an ID that will be used to reference that computation.
+On the development side, the contract uses the Truffle framework to enable easier unit-testing of the contract and easier deployment both to a test environment and to the real one.
+
+Most of our focus was on developing a functional and correct smart contract, thus the client application has to be considered more as a proof of concept rather then an actual implementation. This application interacts with the smart contract and is a web application divided in three components: 
+\begin{enumerate}
+\item A Geth client connected to the desired blockchain (either the main one or one of the test ones).
+\item An Express server that interacts with the Geth client using JSON-RCP over WebSockets and that serves the frontend to the user. Additionally, the server listens for events on the blockchain and takes the needed actions, also by interacting with the Docker daemon. For example, if the server receives a \code{ComputationAssigned} event which assigns a computation to the current farmer, it will download the Docker image associated with that computation, start the associated container, collect the results and automatically send their hash to the smart contract.
+\item A frontend written with standard web technologies (HTML, CSS, Javascript) that presents the information to the user and relays user actions to the backend Express server.
+\end{enumerate}
+
+\subsection{Implementation details}
+\label{sect:impl-details}
+
+\subsubsection{Smart contract}
+The smart contract is split over two Solidity contracts, that are then combined to a single one before the deployment. The \code{Administrable} contract maintains informations related to the owner of the contract and the auditors; the \code{Main} contracts stores all the computations' metadata alongside with their information and contains the methods that allow to implement the protocol described in \ref{sect:protocol}.
+
+In this proof of concept, the \code{Administrable} contract is very simple. On contract deployment, the address of the deployer is stored as the owner of the contract. This account has full control over the contract, can set configuration parameters and is the only trusted auditor. A more sophisticated implementation may allow for multiple auditors and/or owners or require a voting system in order to change any parameter, but this was beyond the scope of our proof of concept.
+
+The contract \code{Main} maintains a mapping that associates every computation ID to an object containing all the information related to that computation. The computation object itself follows the state machine described in figure \ref{figs:computation-states}. In this diagram are also reported the name of the methods offered by the smart contract to perform that status transition. Every method can be invoked only by a specific entity (publisher, farmer, auditor) and these contraints are enforced in the contract. A computation object is structured as shown in listing \ref{code:computation-structure}. Each field of the object has a specific function, described below:
+
+\begin{itemize}
+\item \code{status}: maintains the current position of this computation in the state machine described in figure \ref{figs:computation-states}
+\item \code{publisher, dockerImageName, weiReward}: the address of the account that published the computation request, the full name of the Docker image describing the requested computation and the amount of Ether (in Wei) that will be given to the farmer after performing the computation.
+\item \code{assignedTo, assignationTimestamp}: the address of the farmer to whom the computation is assigned and when this assignation was made. The timestamp is needed to check if a challenge from another farmer is valid or not.
+\item \code{minStakeFee, stakeFee, auditFee}: used to store the incentives described above. All the amounts are in Wei.
+\item \code{resultHash, resultLink}: the hash of the result obtained by the farmer and the link at which the publisher can download the full results.
+\item \code{resultSubmissionTimestamp}: used to check whether a challenge for result ignored can be successful or not.
+\end{itemize}
+
+The methods implemented in the smart contract are all quite similar to the \code{acceptComputation} method described in listing \ref{code:accept-computation}. Most of these method take as first parameter the \code{id} of the computation on which the action has to be performed and use that id to retrieve the computation object associated to it. After that, some checks are performed: usually, these checks regard the existance of a published computation with the given id and the fact that that computation is in the correct state for the required operation. Some methods may have check the additional input parameters received: for example, the \code{submitResult} method must check that the amount payed by the farmer is greater or equal to the \code{minStakeFee} requested by the publisher. After that, the retrieved computation object is modified in some way, depending on the specific operation: these changes are persisted on chain and usually change the computation's state. When all the modification required by the current operation are done, an appropriated event is usually emitted. Also these events are stored on chain and all the users can listen for them in order to be notified when a computation changes.
+
+\begin{figure}
+\caption[Computation object state machine]{State-chart diagram describing the state transition allowed by the computation object alongside with who can trigger each transition}
+\label{figs:computation-states}
+\begin{center}
+    \includegraphics[width=0.9\textwidth]{Figs/diagrams/state/computation-states.png}
+\end{center}
+\end{figure}
+
+\begin{lstlisting}[caption={Definition of the structure that describes the computation object}, label={code:computation-structure}, float]
+struct Computation{ 
+    Status status;
+
+    address publisher;
+    string dockerImageName; 
+    uint weiReward;
+    uint minStakeFee;
+
+    address assignedTo;
+    uint assignationTimestamp;
+
+    uint stakeFee;
+    bytes32 resultHash;
+    string resultLink;
+    uint resultSubmissionTimestamp;
+
+    uint auditFee;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[caption={The method that allows a farmer to ask for the assignation of a computation}, label={code:accept-computation}, float]
+function acceptComputation(uint id) public {
+    Computation storage c = computations[id];
+    require(c.publisher != address(0), "Computation does not exists");
+    require(c.status == Status.CREATED, "Status not correct");
+
+    c.assignedTo = msg.sender;
+    c.assignationTimestamp = block.timestamp;
+    c.status = Status.ASSIGNED;
+
+    emit ComputationAssigned(msg.sender, id);
+}
+\end{lstlisting}
+
+\subsubsection{Client application}
+The Express server is composed by a few different modules that interact among each other by using a shared event bus. Most of the events on the bus are generated by a set of listeners that watch for the emission of specific events by the smart contract. The other modules listen for these events on the bus and initiate the needed actions. In particular:
+\begin{enumerate}
+    \item The \code{WsEventQueue} module dispatches a subset of the events generated on the bus to the frontend, so that the information shown to the user can be updated.
+    \item The \code{WorkerManager} module listens for \code{ComputationAssigned} events. If a computation is assigned to the current farmer, this module downloads the Docker container of the computation and starts it. Additionally, this module monitors the running containers and, when one of them exits, notifies it to the event bus with a \code{job-finished} event.
+    \item The \code{UploadManager} listens for these \code{job-finished} events, collect the results, uploads them according to the specifications defined below and submits the result hash to the main contract.
+    \item The \code{WithdrawalManager} listens for events that marks the current farmer as allowed to withdraw, like the acceptance of the results or one of the alternative scenarios. When one of these events is received, it creates the relative withdrawal request.
+\end{enumerate}
+
+\subsubsection{Other details}
+In order to properly work in the current system, there are a few other implementation details that should be known.
+
+When a computation is published, the complete name of a Docker image has to be given. One can refer to a specific version of a Docker image either by giving the image name and a tag or the image name and the image digest (usually in the form of a \code{SHA-256} hash). Image tags are mutable: the tags associated to a specific Docker image can be changed over time without effort. Instead, image digests are immutable: whenever a image is generated, its digest is computed and cannot be changed. Additionally, clients downloading the image by using its digest can check that the image they get is actually the one corresponding to that digest. 
+
+Farmers should execute only computations that have a Docker image name that uses a digest: in this way, if the auditor needs to re-execute a computation, the farmer can be sure that the auditor will execute \emph{exactly} the published computation and not something else. Farmers should not perform computation that use tags in their name because the publisher would be able to cheat. Take for example the situation in which a farmer accepts to perform the computation contained in the image with name \code{my-image:a-tag}, where \code{a-tag} is the tag associated with this image. After the result submissions, the publisher could rebind the tag \code{a-tag} to another version of \code{my-image} that produces a different result and only then reject the farmer's result: when the auditor will re-execute the computation, it will appear that the farmer results were wrong even though they were not. In order to avoid this situation, farmer should only perform computation that use digests in the image name.
+
+The computation contained in the Docker image should store the results in the \code{/result} folder inside the container. The farmer will mount a host folder to that location: in this way the computation result will be retrievable and uploadable. In order to submit the result, the farmer should compress the folder mounted to the \code{/result} location inside the container by using gzip and then compute the hash of the archive obtained in this way. This is the hash that should be submitted to the smart contract. The auditor will perform the same steps when solving a dispute.
+
+The farmer should also provide to the smart contract a link to where the result zip has been uploaded. This link should be accessible through a simple HTTP GET request and no additional authentications should be required. This is one of the aspects that could be improved in future works.

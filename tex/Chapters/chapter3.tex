@@ -1,0 +1,18 @@
+%!TEX root = ../thesis.tex
+
+\section{Requirements}
+\label{sect:requirements}
+
+Given that verifiable computing is not a viable technology yet, our goal has slightly shifted. Instead of trying to develop a decentralized market in which who performs the computation cannot cheat, we will focus on creating a decentralized market in which a dishonest participation is strongly disincentivized. In particular, our idea is to create an application that uses the Ethereum blockchain technology to provide an effective foundation for the decentralized market. This application should have the features described in the following paragraphs.
+
+The application should allow users to \emph{publish computation requests}. Every user should be able to publish to the market a computation request in the form of the name of a Docker image. This image contains the entire description of the computation that has to be performed and should be publicly available.
+
+The application should allow users to \emph{perform published computations}. Users should be able to see the list of computations that have been published but not yet executed and should be able to perform these computations, if so they decide. Users that perform computations will be called \emph{farmers\footnote{We initially wanted to use the term \emph{miner}, but in blockchain environment it is already used to mean something different.}} from now onwards.
+
+The application should allow farmers to \emph{submit} the results of the computation back to the publisher, once they perfomed the computation. While doing this, farmers should commit in some way to the result they publish, so that later one could check that the result received is actually the one produced by the farmer.
+
+The application should allow publishers to either \emph{accept} or \emph{reject the results} submitted by the farmer for a computation they have published. When a result is marked as accepted, the farmer should be payed for his service. When a result is marked as rejected, it should be checked by a trusted party to determine if the farmer actually cheated or not.
+
+All of these actions should be exposed to the users through a graphical interface which, behind the scenes, interacts with the blockchain to ensure that all the data is processed correctly.
+
+Additionally, the application should implement some kind of protocol that strongly discourages dishonest players. In particular, this protocol should encourage farmers to execute the computation without cheating and publisher to reject the result only if it really is not correct. This protocol should be less resource intensive to run than one based on complete verifiable computing.

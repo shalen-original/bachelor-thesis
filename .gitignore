@@ -1,0 +1,25 @@
+# Build outputs
+/tex/Figs/diagrams/
+/tex-slides/Figs/*.png
+code/dapp/build
+code/client/build/**
+
+# Vim swp files
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Node stuff
+node_modules
+
+#Tex
+tex-slides/*.aux
+tex-slides/*.log
+tex-slides/*.nav
+tex-slides/*.out
+tex-slides/*.pdf
+tex-slides/*.snm
+tex-slides/*.toc
+tex-slides/*.vrb
